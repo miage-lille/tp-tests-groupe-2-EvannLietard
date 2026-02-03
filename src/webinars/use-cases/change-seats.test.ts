@@ -24,6 +24,24 @@ describe('Feature : Change seats', () => {
     useCase = new ChangeSeats(webinarRepository);
   });
 
+
+  async function whenUserChangeSeatsWith(payload: any) {
+    try {
+      await useCase.execute(payload);
+    } catch (e) {
+    }
+  }
+
+  async function thenUpdatedWebinarSeatsShouldBe(seats: number) {
+    const updatedWebinar = await webinarRepository.findById('webinar-id');
+    expect(updatedWebinar?.props.seats).toEqual(seats);
+  }
+
+  function expectWebinarToRemainUnchanged() {
+    const webinar = webinarRepository.findByIdSync('webinar-id');
+    expect(webinar?.props.seats).toEqual(100);
+  }
+
   describe('Scenario: Happy path', () => {
     const payload = {
       user: testUser.alice,
@@ -32,9 +50,8 @@ describe('Feature : Change seats', () => {
     };
 
     it('should change the number of seats for a webinar', async () => {
-      await useCase.execute(payload);
-      const updatedWebinar = await webinarRepository.findById('webinar-id');
-      expect(updatedWebinar?.props.seats).toEqual(200);
+      await whenUserChangeSeatsWith(payload);
+      await thenUpdatedWebinarSeatsShouldBe(200);
     });
   });
 
@@ -50,11 +67,8 @@ describe('Feature : Change seats', () => {
     });
 
     it('should not modify the initial webinar', async () => {
-      try {
-        await useCase.execute(payload);
-      } catch (error) {}
-      const webinar = webinarRepository.findByIdSync('webinar-id');
-      expect(webinar?.props.seats).toEqual(100);
+      await whenUserChangeSeatsWith(payload);
+      expectWebinarToRemainUnchanged();
     });
   });
 
@@ -70,11 +84,8 @@ describe('Feature : Change seats', () => {
     });
 
     it('should not modify the initial webinar', async () => {
-      try {
-        await useCase.execute(payload);
-      } catch (error) {}
-      const webinar = webinarRepository.findByIdSync('webinar-id');
-      expect(webinar?.props.seats).toEqual(100);
+      await whenUserChangeSeatsWith(payload);
+      expectWebinarToRemainUnchanged();
     });
   });
 
@@ -90,11 +101,8 @@ describe('Feature : Change seats', () => {
     });
 
     it('should not modify the initial webinar', async () => {
-      try {
-        await useCase.execute(payload);
-      } catch (error) {}
-      const webinar = webinarRepository.findByIdSync('webinar-id');
-      expect(webinar?.props.seats).toEqual(100);
+      await whenUserChangeSeatsWith(payload);
+      expectWebinarToRemainUnchanged();
     });
   });
 
@@ -110,11 +118,8 @@ describe('Feature : Change seats', () => {
     });
 
     it('should not modify the initial webinar', async () => {
-      try {
-        await useCase.execute(payload);
-      } catch (error) {}
-      const webinar = webinarRepository.findByIdSync('webinar-id');
-      expect(webinar?.props.seats).toEqual(100);
+      await whenUserChangeSeatsWith(payload);
+      expectWebinarToRemainUnchanged();
     });
   });
 });
