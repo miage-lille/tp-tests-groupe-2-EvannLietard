@@ -13,7 +13,7 @@ const asyncExec = promisify(exec);
 describe('PrismaWebinarRepository', () => {
 		describe('Scenario : repository.create', () => {
 			it('should create a webinar', async () => {
-				// ARRANGE
+
 				const webinar = new Webinar({
 					id: 'webinar-id',
 					organizerId: 'organizer-id',
@@ -23,10 +23,8 @@ describe('PrismaWebinarRepository', () => {
 					seats: 100,
 				});
 
-				// ACT
 				await repository.create(webinar);
 
-				// ASSERT
 				const maybeWebinar = await prismaClient.webinar.findUnique({
 					where: { id: 'webinar-id' },
 				});
@@ -77,5 +75,65 @@ describe('PrismaWebinarRepository', () => {
 		return prismaClient.$disconnect();
 	});
 
-	// Les tests viendront ici
+    			describe('Scenario : repository.findById', () => {
+				it('should find a webinar by id', async () => {
+
+					await prismaClient.webinar.create({
+						data: {
+							id: 'webinar-id',
+							organizerId: 'organizer-id',
+							title: 'Webinar title',
+							startDate: new Date('2022-01-01T00:00:00Z'),
+							endDate: new Date('2022-01-01T01:00:00Z'),
+							seats: 100,
+						},
+					});
+
+
+					const webinar = await repository.findById('webinar-id');
+
+					expect(webinar).not.toBeNull();
+					expect(webinar?.props).toEqual({
+						id: 'webinar-id',
+						organizerId: 'organizer-id',
+						title: 'Webinar title',
+						startDate: new Date('2022-01-01T00:00:00Z'),
+						endDate: new Date('2022-01-01T01:00:00Z'),
+						seats: 100,
+					});
+				});
+			});
+
+			describe('Scenario : repository.update', () => {
+				it('should update a webinar', async () => {
+					await prismaClient.webinar.create({
+						data: {
+							id: 'webinar-id',
+							organizerId: 'organizer-id',
+							title: 'Webinar title',
+							startDate: new Date('2022-01-01T00:00:00Z'),
+							endDate: new Date('2022-01-01T01:00:00Z'),
+							seats: 100,
+						},
+					});
+					const webinar = await repository.findById('webinar-id');
+					webinar?.update({ seats: 200 });
+
+					if (webinar) {
+						await repository.update(webinar);
+					}
+
+					const updated = await prismaClient.webinar.findUnique({
+						where: { id: 'webinar-id' },
+					});
+					expect(updated).toEqual({
+						id: 'webinar-id',
+						organizerId: 'organizer-id',
+						title: 'Webinar title',
+						startDate: new Date('2022-01-01T00:00:00Z'),
+						endDate: new Date('2022-01-01T01:00:00Z'),
+						seats: 200,
+					});
+				});
+			});
 });
