@@ -37,4 +37,84 @@ describe('Feature : Change seats', () => {
       expect(updatedWebinar?.props.seats).toEqual(200);
     });
   });
+
+  describe('Scenario: webinar does not exist', () => {
+    const payload = {
+      user: testUser.alice,
+      webinarId: 'not-exist-id',
+      seats: 200,
+    };
+
+    it('should fail', async () => {
+      await expect(useCase.execute(payload)).rejects.toThrow('Webinar not found');
+    });
+
+    it('should not modify the initial webinar', async () => {
+      try {
+        await useCase.execute(payload);
+      } catch (error) {}
+      const webinar = webinarRepository.findByIdSync('webinar-id');
+      expect(webinar?.props.seats).toEqual(100);
+    });
+  });
+
+  describe('Scenario: update the webinar of someone else', () => {
+    const payload = {
+      user: testUser.bob, // pas l'organisateur
+      webinarId: 'webinar-id',
+      seats: 200,
+    };
+
+    it('should fail with not organizer', async () => {
+      await expect(useCase.execute(payload)).rejects.toThrow('User is not allowed to update this webinar');
+    });
+
+    it('should not modify the initial webinar', async () => {
+      try {
+        await useCase.execute(payload);
+      } catch (error) {}
+      const webinar = webinarRepository.findByIdSync('webinar-id');
+      expect(webinar?.props.seats).toEqual(100);
+    });
+  });
+
+  describe('Scenario: change seat to an inferior number', () => {
+    const payload = {
+      user: testUser.alice,
+      webinarId: 'webinar-id',
+      seats: 50, // inférieur à l'existant
+    };
+
+    it('should fail with reduce seats', async () => {
+      await expect(useCase.execute(payload)).rejects.toThrow('You cannot reduce the number of seats');
+    });
+
+    it('should not modify the initial webinar', async () => {
+      try {
+        await useCase.execute(payload);
+      } catch (error) {}
+      const webinar = webinarRepository.findByIdSync('webinar-id');
+      expect(webinar?.props.seats).toEqual(100);
+    });
+  });
+
+  describe('Scenario: change seat to a number > 1000', () => {
+    const payload = {
+      user: testUser.alice,
+      webinarId: 'webinar-id',
+      seats: 1001,
+    };
+
+    it('should fail with too many seats', async () => {
+      await expect(useCase.execute(payload)).rejects.toThrow('Webinar must have at most 1000 seats');
+    });
+
+    it('should not modify the initial webinar', async () => {
+      try {
+        await useCase.execute(payload);
+      } catch (error) {}
+      const webinar = webinarRepository.findByIdSync('webinar-id');
+      expect(webinar?.props.seats).toEqual(100);
+    });
+  });
 });
